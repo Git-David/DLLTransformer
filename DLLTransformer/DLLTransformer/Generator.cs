@@ -25,7 +25,10 @@ namespace DLLTransformer
         CodeCompileUnit myassembly;
         CodeNamespace mynamespace;
         string outputClassesPath;
-
+        public bool IsDelegate(Type type)
+        {
+            return type.IsSubclassOf(typeof(Delegate)) || type == typeof(Delegate);
+        }
         public void GenerateDLL()
         {
             mynamespace = new CodeNamespace(AssemblyName);
@@ -39,20 +42,25 @@ namespace DLLTransformer
             {
                 if (c.ClassType.IsEnum)
                 {
-                   CreateEnum(c);
+                    CreateEnum(c);
+                }
+                if (IsDelegate(c.ClassType))
+                {
+
                 }
                 if (c.ClassType.IsInterface)
                 {
                     CreateInterface(c);
                 }
+
                 if (c.ClassType.IsClass)
                 {
-                   CreateClass(c);
+                    CreateClass(c);
                 }
-             
+
             }
 
-           // SaveAssembly();
+           SaveAssembly();
         }
 
         public void CreateEnum(ClassTemplate c)
@@ -117,38 +125,42 @@ namespace DLLTransformer
                 if (interfaceMember.MemberType == MemberTypes.Method)
                 {
                     MethodInfo iMember = interfaceMember as MethodInfo;
-                    f = new CodeMemberMethod();
-                    f.Name = iMember.Name;
-                    CodeTypeReference ctr = new CodeTypeReference(iMember.ReturnType.FullName.Replace("Keysight", "Agilent"));
-                    ((CodeMemberMethod)f).ReturnType = ctr;
-                    foreach(ParameterInfo p in iMember.GetParameters())
+                    if (!iMember.IsSpecialName)
                     {
-                        CodeParameterDeclarationExpression pExpress = new CodeParameterDeclarationExpression(p.ParameterType.FullName.Replace("Keysight", "Agilent"), p.Name);
-                        if (p.IsOut)
+                        f = new CodeMemberMethod();
+                        f.Name = iMember.Name;
+                        CodeTypeReference ctr = new CodeTypeReference(iMember.ReturnType.FullName.Replace("Keysight", "Agilent"));
+                        ((CodeMemberMethod)f).ReturnType = ctr;
+                        foreach (ParameterInfo p in iMember.GetParameters())
                         {
-                            pExpress.Direction = FieldDirection.Out;
-                        }
-                        if (p.ParameterType.IsByRef)
-                        {
-                            pExpress.Direction = FieldDirection.Ref;
-                        }
-                        if (p.IsIn)
-                        {
-                            pExpress.Direction = FieldDirection.In;
+                            CodeParameterDeclarationExpression pExpress = new CodeParameterDeclarationExpression(p.ParameterType.FullName.Replace("Keysight", "Agilent").Replace("&",""), p.Name);
+                        
+                            if (p.ParameterType.IsByRef)
+                            {
+                                pExpress.Direction = FieldDirection.Ref;
+                            }
+                            if (p.IsOut)
+                            {
+                                pExpress.Direction = FieldDirection.Out;
+                            }
+                            if (p.IsIn)
+                            {
+                                pExpress.Direction = FieldDirection.In;
 
+                            }
+                            ((CodeMemberMethod)f).Parameters.Add(pExpress);
                         }
-                        ((CodeMemberMethod)f).Parameters.Add(pExpress);
                     }
                 }
                 if (interfaceMember.MemberType == MemberTypes.Property)
-                { 
-                    PropertyInfo iMember=interfaceMember as PropertyInfo;
+                {
+                    PropertyInfo iMember = interfaceMember as PropertyInfo;
                     f = new CodeMemberProperty();
                     f.Name = interfaceMember.Name;
                     CodeTypeReference ctr = new CodeTypeReference(iMember.PropertyType.FullName.Replace("Keysight", "Agilent"));
                     ((CodeMemberProperty)f).Type = ctr;
 
-                    string strGetSet="";
+                    string strGetSet = "";
                     if (iMember.CanRead)
                     {
                         strGetSet = "get; ";
@@ -164,11 +176,12 @@ namespace DLLTransformer
                 }
                 if (interfaceMember.MemberType == MemberTypes.Event)
                 {
-                    EventInfo iMember = interfaceMember as EventInfo;
-                    f = new CodeMemberEvent();
-                    f.Name = interfaceMember.Name;
-                    CodeTypeReference ctr = new CodeTypeReference(iMember.EventHandlerType.FullName.Replace("Keysight", "Agilent"));
-                    ((CodeMemberEvent)f).Type = ctr;
+                    //EventInfo iMember = interfaceMember as EventInfo;
+                    //f = new CodeMemberEvent();
+                    //f.Name = interfaceMember.Name;
+                    //CodeTypeReference ctr = new CodeTypeReference(iMember.EventHandlerType.FullName.Replace("Keysight", "Agilent"));
+                    //((CodeMemberEvent)f).Type = ctr;
+                    //((CodeMemberEvent)f).Attributes = MemberAttributes.Static;
                 }
 
                 if (f != null)
@@ -210,7 +223,7 @@ namespace DLLTransformer
             CreateOriginalInstance(c, ref myclass);
             CreateConstructor(c, ref myclass);
             CreateMemberField(c, ref myclass);
-            //CreateProperty(c, ref myclass);
+          //  CreateProperty(c, ref myclass);
 
 
             //generate .cs file into the folder
@@ -309,10 +322,10 @@ namespace DLLTransformer
                         paramExpress.Add(new CodeVariableReferenceExpression(p.Name));
                     }
 
-                 CodeExpression thisExpr = new CodeThisReferenceExpression();
-                 CodeStatement initializeOriginObject = new CodeAssignStatement(
-                     new CodeFieldReferenceExpression(thisExpr, c.ClassName + "_Origin"), new CodeObjectCreateExpression(c.ClassType,paramExpress.ToArray()));
-                 constructor.Statements.Add(initializeOriginObject);
+                    CodeExpression thisExpr = new CodeThisReferenceExpression();
+                    CodeStatement initializeOriginObject = new CodeAssignStatement(
+                        new CodeFieldReferenceExpression(thisExpr, c.ClassName + "_Origin"), new CodeObjectCreateExpression(c.ClassType, paramExpress.ToArray()));
+                    constructor.Statements.Add(initializeOriginObject);
                 }
                 else
                 {
@@ -331,10 +344,10 @@ namespace DLLTransformer
                     foreach (FieldInfo field in c.Fields)
                     {
                         CodeExpression thisExpr = new CodeThisReferenceExpression();
-                        if ((field.IsLiteral && !field.IsInitOnly)|| field.IsStatic)
+                        if ((field.IsLiteral && !field.IsInitOnly) || field.IsStatic)
                         {
                             CodeExpression originType = new CodeTypeReferenceExpression(c.ClassType);
-                            CodeStatement initializeOriginObject = new CodeAssignStatement( 
+                            CodeStatement initializeOriginObject = new CodeAssignStatement(
                                 new CodeFieldReferenceExpression(thisExpr, field.Name), new CodeFieldReferenceExpression(originType, field.Name));
                             constructor.Statements.Add(initializeOriginObject);
                         }
@@ -361,7 +374,7 @@ namespace DLLTransformer
                 if (c.ClassType.IsAbstract && c.ClassType.IsSealed)//What C# calls a static class, is an abstract, sealed class to the CLR. 
                 {
                     CodeExpression originType = new CodeTypeReferenceExpression(c.ClassType);
-                    mymemberfield.InitExpression = new CodeFieldReferenceExpression(originType, field.Name);                   
+                    mymemberfield.InitExpression = new CodeFieldReferenceExpression(originType, field.Name);
                 }
                 myclass.Members.Add(mymemberfield);
             }
@@ -396,17 +409,17 @@ namespace DLLTransformer
                         //new CodeSnippetExpression(c.ClassNamespace + "." + c.ClassName + "." + property.Name + "value");
                         CodeExpression thisExpr = new CodeThisReferenceExpression();
                         CodeFieldReferenceExpression refOrigin = new CodeFieldReferenceExpression(thisExpr, c.ClassName + "_Origin");
-                        CodePropertyReferenceExpression refOriginProp = new CodePropertyReferenceExpression(refOrigin, property.Name);
+                      //  CodePropertyReferenceExpression refOriginProp = new CodePropertyReferenceExpression(refOrigin, property.Name);
 
                         CodeStatement setsnippet = new CodeAssignStatement(
-                                  new CodeFieldReferenceExpression(refOriginProp, property.Name), new CodeSnippetExpression("value"));
+                                  new CodeFieldReferenceExpression(refOrigin, property.Name), new CodeSnippetExpression("value"));
                         myproperty.SetStatements.Add(setsnippet);
                     }
                     myclass.Members.Add(myproperty);
                 }
                 else
                 {
- 
+
                 }
             }
         }

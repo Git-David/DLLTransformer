@@ -18,15 +18,10 @@ namespace DLLTransformer
 
         public void ReflectTypesFromAssembly(Assembly myAssembly)
         {
-            var Classes=myAssembly.GetExportedTypes();
+            var Classes=myAssembly.GetExportedTypes().Where(t=>!t.ContainsGenericParameters);
             ReferencedAssemblies=myAssembly.GetReferencedAssemblies().ToList();
             foreach (Type c in Classes)
             {
-                if (IsDelegate(c))
-                {
-                    //TODO: handle delegates.
-                    return;
-                }
                 ClassTemplate myClass = new ClassTemplate(); 
                 const BindingFlags bf = BindingFlags.DeclaredOnly | BindingFlags.Public |
                    BindingFlags.Instance | BindingFlags.Static;
@@ -66,10 +61,6 @@ namespace DLLTransformer
             }
         }
 
-        public bool IsDelegate(Type type)
-        {
-          
-            return type.IsSubclassOf(typeof(Delegate)) || type == typeof(Delegate);
-        }
+     
     }
 }
