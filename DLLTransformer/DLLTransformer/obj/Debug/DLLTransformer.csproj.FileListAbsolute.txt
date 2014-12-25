@@ -1,0 +1,5 @@
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\DLLTransformer\bin\Debug\DLLTransformer.dll
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\DLLTransformer\bin\Debug\DLLTransformer.pdb
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\DLLTransformer\obj\Debug\DLLTransformer.dll
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\DLLTransformer\obj\Debug\DLLTransformer.pdb
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\DLLTransformer\obj\Debug\DLLTransformer.csprojResolveAssemblyReference.cache

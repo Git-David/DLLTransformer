@@ -1,0 +1,8 @@
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\bin\Debug\ConsoleApplication.exe.config
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\bin\Debug\ConsoleApplication.exe
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\bin\Debug\ConsoleApplication.pdb
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\bin\Debug\DLLTransformer.dll
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\bin\Debug\DLLTransformer.pdb
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\obj\x86\Debug\ConsoleApplication.csprojResolveAssemblyReference.cache
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\obj\x86\Debug\ConsoleApplication.exe
+C:\Users\davidl01\Documents\Visual Studio 2010\Projects\DLLTransformer\ConsoleApplication\obj\x86\Debug\ConsoleApplication.pdb
