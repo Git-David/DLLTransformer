@@ -46,7 +46,7 @@ namespace DLLTransformer
                 }
                 if (IsDelegate(c.ClassType))
                 {
-
+                    CreateDelegate(c);
                 }
                 if (c.ClassType.IsInterface)
                 {
@@ -100,6 +100,39 @@ namespace DLLTransformer
             }
         }
 
+        public void CreateDelegate(ClassTemplate c)
+        {
+            string newClassnamespace = c.ClassNamespace.Replace("Keysight", "Agilent");
+            CodeCompileUnit classUnit = new CodeCompileUnit();
+            CodeNamespace classNamespace = new CodeNamespace(newClassnamespace);
+
+            CodeTypeDelegate myDelegate = new CodeTypeDelegate();
+            myDelegate.Name = c.ClassName;
+            //delegate1.Parameters.Add(new CodeParameterDeclarationExpression("System.Object", "sender"));
+            //delegate1.Parameters.Add(new CodeParameterDeclarationExpression("System.EventArgs", "e"));
+
+            MethodInfo method = c.ClassType.GetMethod("Invoke");
+            myDelegate.ReturnType = new CodeTypeReference(method.ReflectedType);
+            foreach (ParameterInfo param in method.GetParameters())
+            {
+                myDelegate.Parameters.Add(new CodeParameterDeclarationExpression(param.ParameterType.FullName.Replace("Keysight", "Agilent"), param.Name));
+            }
+
+            //generate .cs file into the folder
+            using (CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp"))
+            {
+                string fileName = outputClassesPath + c.ClassName + ".cs";
+                CodeGeneratorOptions options = new CodeGeneratorOptions();
+                options.BracingStyle = "C";
+                using (StreamWriter sourceWriter = new StreamWriter(fileName))
+                {
+                    provider.GenerateCodeFromCompileUnit(
+                        classUnit, sourceWriter, options);
+                }
+            }
+        }
+
+
         public void CreateInterface(ClassTemplate c)
         {
             string newClassnamespace = c.ClassNamespace.Replace("Keysight", "Agilent");
@@ -122,6 +155,7 @@ namespace DLLTransformer
             {
 
                 CodeTypeMember f = null;
+                //Handle methods in interface
                 if (interfaceMember.MemberType == MemberTypes.Method)
                 {
                     MethodInfo iMember = interfaceMember as MethodInfo;
@@ -152,6 +186,8 @@ namespace DLLTransformer
                         }
                     }
                 }
+
+                //Handle properties in interface
                 if (interfaceMember.MemberType == MemberTypes.Property)
                 {
                     PropertyInfo iMember = interfaceMember as PropertyInfo;
@@ -174,14 +210,17 @@ namespace DLLTransformer
                         ((CodeMemberProperty)f).SetStatements.Add(snippet);
                     }
                 }
+
+
+                //Handle events in interface
                 if (interfaceMember.MemberType == MemberTypes.Event)
                 {
-                    //EventInfo iMember = interfaceMember as EventInfo;
-                    //f = new CodeMemberEvent();
-                    //f.Name = interfaceMember.Name;
-                    //CodeTypeReference ctr = new CodeTypeReference(iMember.EventHandlerType.FullName.Replace("Keysight", "Agilent"));
-                    //((CodeMemberEvent)f).Type = ctr;
-                    //((CodeMemberEvent)f).Attributes = MemberAttributes.Static;
+                    EventInfo iMember = interfaceMember as EventInfo;
+                    f = new CodeMemberEvent();
+                    f.Name = interfaceMember.Name;
+                    CodeTypeReference ctr = new CodeTypeReference(iMember.EventHandlerType.FullName.Replace("Keysight", "Agilent"));
+                    ((CodeMemberEvent)f).Type = ctr;
+                    ((CodeMemberEvent)f).Attributes = MemberAttributes.Static;
                 }
 
                 if (f != null)
@@ -223,7 +262,7 @@ namespace DLLTransformer
             CreateOriginalInstance(c, ref myclass);
             CreateConstructor(c, ref myclass);
             CreateMemberField(c, ref myclass);
-          //  CreateProperty(c, ref myclass);
+            CreateProperty(c, ref myclass);
 
 
             //generate .cs file into the folder
@@ -423,64 +462,6 @@ namespace DLLTransformer
                 }
             }
         }
-
-        //public static bool CompileCSharpCode(string[] sourceFilePaths, string targetDllPath, out List<string> errorList)
-        //{
-        //    errorList = new List<string>();
-        //    CompilerResults cr;
-
-        //    var settings = new Dictionary<string, string>();
-        //    settings.Add("CompilerVersion", "v3.5"); //for defect 349605.
-
-        //    using (var provider = new CSharpCodeProvider(settings))
-        //    {
-        //        var cp = new CompilerParameters();
-        //        cp.ReferencedAssemblies.Add("System.dll");
-        //        cp.GenerateExecutable = false;
-        //        cp.OutputAssembly = targetDllPath;
-        //        cp.GenerateInMemory = false;
-        //        // To debug generated code, uncomment below lines.
-        //        //FileInfo fileInfo = new FileInfo(targetDllPath);
-        //        //cp.IncludeDebugInformation = true;
-        //        //cp.TempFiles = new TempFileCollection(fileInfo.Directory.ToString(), true);
-        //        //cp.TempFiles.KeepFiles = true;
-        //        cr = provider.CompileAssemblyFromFile(cp, sourceFilePaths);
-
-        //        if (cr.Errors.Count > 0)
-        //        {
-        //            foreach (CompilerError ce in cr.Errors)
-        //            {
-        //                errorList.Add(ce.ToString());
-        //            }
-        //        }
-        //    }
-        //    // Return the results of compilation. 
-        //    return cr.Errors.Count <= 0;
-        //}
-
-        //string strNamespace;
-
-        //public void CreateNamespace(string strNamespace)
-        //{
-        //    mynamespace = new CodeNamespace();
-        //    mynamespace.Name = strNamespace;
-        //}
-
-        //public void CreateImports()
-        //{
-        //    mynamespace.Imports.Add
-        //    (new CodeNamespaceImport("System"));
-
-        //    mynamespace.Imports.Add
-        //    (new CodeNamespaceImport("System.Drawing"));
-
-        //    mynamespace.Imports.Add
-        //    (new CodeNamespaceImport("System.Windows.Forms"));
-        //}
-
-
-
-
 
 
         //public void CreateMethod()

@@ -23,17 +23,15 @@ namespace DLLTransformer
 
             var dllFiles = Directory.GetFiles(dllInputFolder, "*.dll").ToArray();
 
+
+            //give the dlls an order to avoid 'null reference' situation.
             List<string> OriginalDllList = new List<string>();
             OriginalDllList.Add("Keysight.CommandExpert.DataModel.dll");
             OriginalDllList.Add("Keysight.CommandExpert.Common.dll");
             OriginalDllList.Add("Keysight.CommandExpert.InstrumentAbstraction.dll");
             OriginalDllList.Add("Keysight.CommandExpert.SequenceExecution.dll");
             OriginalDllList.Add("Keysight.CommandExpert.Addons.dll");
-           // OriginalDllList.Add("Keysight.CommandExpert.Scpi.dll");
-
-
-
-
+            OriginalDllList.Add("Keysight.CommandExpert.Scpi.dll");
 
             foreach (var dllName in OriginalDllList)
             {
